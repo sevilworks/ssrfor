@@ -1,0 +1,19 @@
+"""
+SSRF Detection Tool - Complete Project Structure
+===============================================
+
+Project Structure:
+ssrf-detector/
+├── main.py
+├── requirements.txt
+├── config.py
+├── src/
+│   ├── __init__.py
+│   ├── url_processor.py
+│   ├── ssrf_tester.py
+│   ├── callback_server.py
+│   └── database.py
+├── data/
+│   └── vulnerable_endpoints.json
+└── README.md
+"""
