@@ -14,13 +14,13 @@ class URLProcessor:
     
     def extract_urls_from_subdomains(self, subdomains_file, tools=None, use_katana=False):
         """
-        Extract URLs using multiple tools: gauplus, gau, waybackurls, (optionally katana).
-        tools: list of tool names to use (default: gauplus, gau, waybackurls; katana only if use_katana=True)
+        Extract URLs using waybackurls (optionally katana).
+        tools: list of tool names to use (default: waybackurls; katana only if use_katana=True)
         use_katana: if True, also use katana for crawling
         Returns: sorted list of unique URLs
         """
         if not tools:
-            tools = ["gauplus", "gau", "waybackurls"]
+            tools = ["waybackurls"]
             if use_katana:
                 tools.append("katana")
         all_urls = set()
@@ -38,15 +38,7 @@ class URLProcessor:
                     for sub in subdomains:
                         tmp.write(sub + '\n')
                     tmp_path = tmp.name
-                if tool == "gauplus":
-                    cmd = [Config().GAUPLUS_PATH, "-subs", "-b", "png,jpg,gif,jpeg,swf,woff,svg,css,js,ico,pdf,zip,rar,exe,dmg,mp4,mp3,avi"]
-                    urls = self.run_tool_with_interrupt(cmd, stdin_file=tmp_path)
-                    print(f"{Fore.GREEN}  {tool}: {len(urls)} URLs found{Style.RESET_ALL}")
-                elif tool == "gau":
-                    cmd = ["gau", "--threads", "10"]
-                    urls = self.run_tool_with_interrupt(cmd, stdin_file=tmp_path)
-                    print(f"{Fore.GREEN}  {tool}: {len(urls)} URLs found{Style.RESET_ALL}")
-                elif tool == "waybackurls":
+                if tool == "waybackurls":
                     cmd = ["waybackurls"]
                     urls = self.run_tool_with_interrupt(cmd, stdin_file=tmp_path)
                     print(f"{Fore.GREEN}  {tool}: {len(urls)} URLs found{Style.RESET_ALL}")
