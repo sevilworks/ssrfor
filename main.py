@@ -6,6 +6,7 @@ import time
 import threading
 import json
 import psutil
+import xml.etree.ElementTree as ET
 from colorama import init, Fore, Style
 from src.url_processor import URLProcessor
 from src.ssrf_tester import SSRFTester
@@ -116,13 +117,28 @@ def server(host, port, cloudflared):
     server_instance.run(host=host, port=port)
 
 @cli.command()
-@click.option('--subdomains', '-s', required=True, help='Path to subdomains file')
+@click.option('--subdomains', '-s', required=True, help='Path to subdomains file or Burp Suite XML (with --post)')
 @click.option('--output', '-o', help='Output file for results')
 @click.option('--callback-url', '-c', help='Custom callback URL (default: auto-detect from Cloudflared tunnel)')
 @click.option('--tools', '-t', help='Comma-separated list of tools to use for URL extraction (gauplus,gau,waybackurls,katana)', default=None)
-def scan(subdomains, output, callback_url, tools):
-    """Scan subdomains for SSRF vulnerabilities"""
+@click.option('--post', is_flag=True, help='Scan POST requests from Burp Suite XML file')
+def scan(subdomains, output, callback_url, tools, post):
+    """Scan subdomains or Burp Suite POST requests for SSRF vulnerabilities"""
     tool_list = [t.strip() for t in tools.split(',')] if tools else None
+    if post:
+        # POST scan mode: subdomains is a Burp Suite XML file
+        if not callback_url:
+            callback_url = get_cloudflared_public_url()
+            if callback_url:
+                callback_url = f"{callback_url}/callback"
+                print(f"{Fore.GREEN}🌐 Using Cloudflared callback URL: {callback_url}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.RED}❌ No callback URL specified and no Cloudflared tunnel found{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}💡 Either start the server with: python main.py server --cloudflared{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}💡 Or provide custom callback URL with: -c https://<your-tunnel>.trycloudflare.com/callback{Style.RESET_ALL}")
+                return
+        asyncio.run(run_post_scan(subdomains, output, callback_url))
+        return
     if not callback_url:
         callback_url = get_cloudflared_public_url()
         if callback_url:
@@ -381,5 +397,75 @@ async def run_scan(subdomains_file: str, output_file: str = None, callback_url: 
             json.dump(internal_results, f, indent=2)
         print(f"💾 Internal SSRF results saved to: {output_file.replace('.json', '_internal.json')}")
         
-if __name__ == "__main__":
-    cli()
+async def run_post_scan(burp_file, output_file, callback_url):
+    """Scan POST requests from Burp Suite XML for SSRF (blind + internal)"""
+    print(f"\n{Fore.GREEN}🚀 Starting POST SSRF scan (Burp Suite XML)...{Style.RESET_ALL}")
+    print(f"📁 Burp Suite file: {burp_file}")
+    print(f"🔗 Callback URL: {callback_url}")
+    import re
+    import aiohttp
+    from urllib.parse import urlparse, parse_qs, urlencode
+    from tqdm import tqdm
+    from difflib import SequenceMatcher
+    # Step 1: Parse Burp XML, extract POST requests
+    tree = ET.parse(burp_file)
+    root = tree.getroot()
+    post_requests = []
+    for item in root.findall('item'):
+        method = item.findtext('method')
+        if method and method.strip().upper() == 'POST':
+            url = item.findtext('url')
+            request_raw = item.findtext('request')
+            if not url or not request_raw:
+                continue
+            # Extract headers and body from raw request
+            req_lines = request_raw.split('\n')
+            headers = {}
+            body = ''
+            in_body = False
+            for line in req_lines[1:]:
+                if line.strip() == '':
+                    in_body = True
+                    continue
+                if in_body:
+                    body += line + '\n'
+                else:
+                    if ':' in line:
+                        k, v = line.split(':', 1)
+                        headers[k.strip()] = v.strip()
+            body = body.strip()
+            post_requests.append({'url': url, 'headers': headers, 'body': body, 'raw': request_raw})
+    if not post_requests:
+        print(f"{Fore.RED}❌ No POST requests found in Burp file.{Style.RESET_ALL}")
+        return
+    print(f"{Fore.YELLOW}Found {len(post_requests)} POST requests in Burp file.{Style.RESET_ALL}")
+    # Step 2: For each POST, find URL-like params in body
+    def find_url_like_params(body):
+        # Try to parse as JSON, else as form-encoded
+        url_params = []
+        try:
+            import json
+            data = json.loads(body)
+            for k, v in data.items():
+                if isinstance(v, str) and re.search(r'(https?|gopher|ftp|file|dict|php|jar|tftp)://', v):
+                    url_params.append((k, v))
+        except Exception:
+            # Fallback: form-encoded
+            qs = parse_qs(body)
+            for k, vs in qs.items():
+                for v in vs:
+                    if re.search(r'(https?|gopher|ftp|file|dict|php|jar|tftp)://', v):
+                        url_params.append((k, v))
+        return url_params
+    # Prepare for SSRF injection and scanning
+    for req in post_requests:
+        url = req['url']
+        headers = req['headers']
+        body = req['body']
+        url_params = find_url_like_params(body)
+        print(f"\n{Fore.CYAN}POST {url}{Style.RESET_ALL}")
+        print(f"  Headers: {headers}")
+        print(f"  Body: {body}")
+        print(f"  URL-like params: {url_params}")
+    print(f"{Fore.YELLOW}[!] SSRF injection and scan logic to be implemented next.{Style.RESET_ALL}")
+    return
