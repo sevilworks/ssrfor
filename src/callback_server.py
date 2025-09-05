@@ -109,38 +109,36 @@ class CallbackServer:
             return JSONResponse({"status": "healthy", "timestamp": datetime.now().isoformat()})
     
     async def log_callback(self, request: Request):
-        """Log the callback and save vulnerable endpoint"""
+        """Log the callback and save vulnerable endpoint, extracting origin param if present"""
         try:
-            # Extract information from the request
             client_ip = request.client.host
             user_agent = request.headers.get("user-agent", "")
             referer = request.headers.get("referer", "")
-            
-            # Create endpoint data
+            query_params = dict(request.query_params)
+            origin_url = query_params.get("origin")
+            # Use origin param if present, else fallback to referer or direct_access
+            vulnerable_url = origin_url if origin_url else (referer if referer else "direct_access")
+            domain = urlparse(vulnerable_url).netloc if vulnerable_url else "direct"
             endpoint_data = {
                 "callback_ip": client_ip,
                 "user_agent": user_agent,
                 "referer": referer,
                 "method": request.method,
                 "path": str(request.url.path),
-                "query_params": dict(request.query_params),
+                "query_params": query_params,
                 "headers": dict(request.headers),
-                "vulnerable_url": referer if referer else "direct_access",
-                "domain": urlparse(referer).netloc if referer else "direct",
+                "vulnerable_url": vulnerable_url,
+                "domain": domain,
                 "callback_received_at": datetime.now().isoformat(),
                 "detection_method": "callback_server"
             }
-            
-            # Save to database
             self.db.save_vulnerable_endpoint(endpoint_data)
-            
             print(f"\n🎯 [SSRF VULNERABILITY DETECTED] 🎯")
             print(f"Domain: {endpoint_data['domain']}")
             print(f"Vulnerable URL: {endpoint_data['vulnerable_url']}")
             print(f"Callback IP: {client_ip}")
             print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             print("-" * 60)
-            
         except Exception as e:
             print(f"Error logging callback: {e}")
     

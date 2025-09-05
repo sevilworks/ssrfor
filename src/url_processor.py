@@ -7,6 +7,7 @@ from config import Config
 from colorama import Fore, Style
 import threading
 import sys
+import concurrent.futures
 
 class URLProcessor:
     def __init__(self):
@@ -15,9 +16,7 @@ class URLProcessor:
     def extract_urls_from_subdomains(self, subdomains_file, tools=None, use_katana=False):
         """
         Extract URLs using waybackurls (optionally katana).
-        tools: list of tool names to use (default: waybackurls; katana only if use_katana=True)
-        use_katana: if True, also use katana for crawling
-        Returns: sorted list of unique URLs
+        Now uses threading for fast extraction on large lists.
         """
         if not tools:
             tools = ["waybackurls"]
@@ -34,29 +33,32 @@ class URLProcessor:
             urls = set()
             print(f"{Fore.YELLOW}🔎 Using {tool} to extract URLs...{Style.RESET_ALL}")
             try:
-                with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
-                    for sub in subdomains:
-                        tmp.write(sub + '\n')
-                    tmp_path = tmp.name
                 if tool == "waybackurls":
-                    cmd = ["waybackurls"]
-                    urls = self.run_tool_with_interrupt(cmd, stdin_file=tmp_path)
+                    def run_wayback(sub):
+                        cmd = ["waybackurls", sub]
+                        return self.run_tool_with_interrupt(cmd)
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
+                        results = list(executor.map(run_wayback, subdomains))
+                    for found in results:
+                        urls.update(found)
                     print(f"{Fore.GREEN}  {tool}: {len(urls)} URLs found{Style.RESET_ALL}")
                 elif tool == "katana":
-                    katana_total = 0
-                    for sub in subdomains:
+                    def run_katana(sub):
                         cmd = ["katana", "-u", f"http://{sub}", "-silent"]
                         try:
-                            found = self.run_tool_with_interrupt(cmd)
-                            urls.update(found)
-                            katana_total += len(found)
+                            return self.run_tool_with_interrupt(cmd)
                         except FileNotFoundError:
                             print(f"{Fore.YELLOW}⚠️  {tool} not found. Skipping katana URLs.{Style.RESET_ALL}")
-                            break
+                            return set()
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                        results = list(executor.map(run_katana, subdomains))
+                    katana_total = 0
+                    for found in results:
+                        urls.update(found)
+                        katana_total += len(found)
                     print(f"{Fore.GREEN}  {tool}: {katana_total} URLs found{Style.RESET_ALL}")
                 tool_counts[tool] = len(urls)
                 all_urls.update(urls)
-                os.unlink(tmp_path)
             except Exception as e:
                 print(f"{Fore.YELLOW}⚠️  {tool} failed: {e}{Style.RESET_ALL}")
         print(f"{Fore.GREEN}URL extraction summary:{Style.RESET_ALL}")
@@ -67,61 +69,59 @@ class URLProcessor:
         return sorted_urls
     
     def filter_urls_with_params(self, urls: List[str]) -> List[str]:
-        """Filter URLs that contain parameters"""
-        urls_with_params = []
-        
+        """Filter URLs that contain parameters with values containing http/https (plain or URL-encoded)"""
+        from urllib.parse import unquote
+        urls_with_url_params = []
         for url in urls:
             try:
                 parsed = urlparse(url)
-                if parsed.query and '=' in parsed.query:
-                    urls_with_params.append(url)
+                if parsed.query:
+                    params = parsed.query.split('&')
+                    for param in params:
+                        key_value = param.split('=', 1)
+                        if len(key_value) == 2:
+                            value = key_value[1]
+                            decoded_value = unquote(value)
+                            if decoded_value.startswith(('http://', 'https://')):
+                                urls_with_url_params.append(url)
+                                break
             except Exception:
                 continue
-        
-        print(f"Found {len(urls_with_params)} URLs with parameters")
-        return urls_with_params
+        print(f"Found {len(urls_with_url_params)} URLs with URL parameters (plain or encoded)")
+        return urls_with_url_params
     
-    def replace_params_with_callback(self, urls: List[str], callback_url: str) -> List[str]:
-        """Replace URL parameters with callback URL using qsreplace"""
-        try:
-            with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as input_file:
-                input_file.write('\n'.join(urls))
-                input_temp = input_file.name
-            
-            with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as output_file:
-                output_temp = output_file.name
-            
-            # Run qsreplace
-            cmd = [self.config.QSREPLACE_PATH, callback_url]
-            
-            with open(input_temp, 'r') as f_in, open(output_temp, 'w') as f_out:
-                process = subprocess.run(
-                    cmd,
-                    stdin=f_in,
-                    stdout=f_out,
-                    stderr=subprocess.PIPE,
-                    text=True
-                )
-            
-            if process.returncode != 0:
-                print(f"Error running qsreplace: {process.stderr}")
-                return []
-            
-            # Read results
-            modified_urls = []
-            with open(output_temp, 'r') as f:
-                modified_urls = [line.strip() for line in f if line.strip()]
-            
-            # Clean up temp files
-            os.unlink(input_temp)
-            os.unlink(output_temp)
-            
-            print(f"Generated {len(modified_urls)} modified URLs")
-            return modified_urls
-            
-        except Exception as e:
-            print(f"Error replacing parameters: {e}")
-            return []
+    def replace_params_with_callback(self, urls, callback_url):
+        """
+        Replace URL-like parameters in the given URLs with the callback URL,
+        and append the original URL as a query param (?origin=...) for tracking.
+        """
+        from urllib.parse import quote
+        modified_urls = []
+        for url in urls:
+            # Append ?origin=<url> to callback URL for tracking
+            if '?' in callback_url:
+                cb_url = f"{callback_url}&origin={quote(url)}"
+            else:
+                cb_url = f"{callback_url}?origin={quote(url)}"
+            # For each param, replace if URL-like, else keep
+            parsed = urlparse(url)
+            params = parsed.query.split('&')
+            new_params = []
+            for param in params:
+                key_value = param.split('=', 1)
+                if len(key_value) == 2:
+                    value = key_value[1]
+                    decoded_value = value
+                    if decoded_value.startswith(('http://', 'https://', 'gopher://', 'dict://', 'php://', 'jar://', 'tftp://')):
+                        new_params.append(f"{key_value[0]}={cb_url}")
+                    else:
+                        new_params.append(param)
+                else:
+                    new_params.append(param)
+            new_query = '&'.join(new_params)
+            new_url = url.replace(parsed.query, new_query)
+            modified_urls.append(new_url)
+        return modified_urls
     
     def extract_domain_from_url(self, url: str) -> str:
         """Extract domain from URL"""
