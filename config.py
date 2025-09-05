@@ -4,7 +4,7 @@ from typing import Optional
 class Config:
     # Server configuration
     CALLBACK_SERVER_HOST: str = "127.0.0.1"
-    CALLBACK_SERVER_PORT: int = 8081
+    CALLBACK_SERVER_PORT: int = 9001
     
     # Tool paths (adjust based on your system)
     GAUPLUS_PATH: str = "gauplus"

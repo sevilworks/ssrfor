@@ -1,22 +1,47 @@
-2025-09-05T00:26:30Z INF Thank you for trying Cloudflare Tunnel. Doing so, without a Cloudflare account, is a quick way to experiment and try it out. However, be aware that these account-less Tunnels have no uptime guarantee, are subject to the Cloudflare Online Services Terms of Use (https://www.cloudflare.com/website-terms/), and Cloudflare reserves the right to investigate your use of Tunnels for violations of such terms. If you intend to use Tunnels in production you should use a pre-created named tunnel by following: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps
-2025-09-05T00:26:30Z INF Requesting new quick Tunnel on trycloudflare.com...
-2025-09-05T00:26:35Z INF +--------------------------------------------------------------------------------------------+
-2025-09-05T00:26:35Z INF |  Your quick Tunnel has been created! Visit it at (it may take some time to be reachable):  |
-2025-09-05T00:26:35Z INF |  https://pavilion-ball-ferry-uganda.trycloudflare.com                                      |
-2025-09-05T00:26:35Z INF +--------------------------------------------------------------------------------------------+
-2025-09-05T00:26:35Z INF Cannot determine default configuration path. No file [config.yml config.yaml] in [~/.cloudflared ~/.cloudflare-warp ~/cloudflare-warp /etc/cloudflared /usr/local/etc/cloudflared]
-2025-09-05T00:26:35Z INF Version 2025.8.1 (Checksum a66353004197ee4c1fcb68549203824882bba62378ad4d00d234bdb8251f1114)
-2025-09-05T00:26:35Z INF GOOS: linux, GOVersion: go1.24.4, GoArch: amd64
-2025-09-05T00:26:35Z INF Settings: map[ha-connections:1 protocol:quic url:http://localhost:9001]
-2025-09-05T00:26:35Z INF cloudflared will not automatically update if installed by a package manager.
-2025-09-05T00:26:35Z INF Generated Connector ID: 7e328763-f928-45d6-a8a6-f6e4cde035f3
-2025-09-05T00:26:35Z INF Initial protocol quic
-2025-09-05T00:26:35Z INF ICMP proxy will use 192.168.1.20 as source for IPv4
-2025-09-05T00:26:35Z INF ICMP proxy will use 2c0f:4280:3080:e87:3e74:99ed:e3b1:8a36 in zone wlan0 as source for IPv6
-2025-09-05T00:26:35Z ERR Cannot determine default origin certificate path. No file cert.pem in [~/.cloudflared ~/.cloudflare-warp ~/cloudflare-warp /etc/cloudflared /usr/local/etc/cloudflared]. You need to specify the origin certificate path by specifying the origincert option in the configuration file, or set TUNNEL_ORIGIN_CERT environment variable originCertPath=
-2025-09-05T00:26:35Z INF ICMP proxy will use 192.168.1.20 as source for IPv4
-2025-09-05T00:26:35Z INF ICMP proxy will use 2c0f:4280:3080:e87:3e74:99ed:e3b1:8a36 in zone wlan0 as source for IPv6
-2025-09-05T00:26:35Z INF Starting metrics server on 127.0.0.1:20241/metrics
-2025-09-05T00:26:35Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveP256] connIndex=0 event=0 ip=198.41.200.23
-2025/09/04 19:26:35 failed to sufficiently increase receive buffer size (was: 208 kiB, wanted: 7168 kiB, got: 416 kiB). See https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes for details.
-2025-09-05T00:26:36Z INF Registered tunnel connection connIndex=0 connection=1e57ab97-f25c-409a-bc2e-345e08a0b39c event=0 ip=198.41.200.23 location=cdg11 protocol=quic
+2025-09-05T20:31:35Z INF Thank you for trying Cloudflare Tunnel. Doing so, without a Cloudflare account, is a quick way to experiment and try it out. However, be aware that these account-less Tunnels have no uptime guarantee, are subject to the Cloudflare Online Services Terms of Use (https://www.cloudflare.com/website-terms/), and Cloudflare reserves the right to investigate your use of Tunnels for violations of such terms. If you intend to use Tunnels in production you should use a pre-created named tunnel by following: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps
+2025-09-05T20:31:35Z INF Requesting new quick Tunnel on trycloudflare.com...
+2025-09-05T20:31:40Z INF +--------------------------------------------------------------------------------------------+
+2025-09-05T20:31:40Z INF |  Your quick Tunnel has been created! Visit it at (it may take some time to be reachable):  |
+2025-09-05T20:31:40Z INF |  https://fails-quickly-lawrence-treating.trycloudflare.com                                 |
+2025-09-05T20:31:40Z INF +--------------------------------------------------------------------------------------------+
+2025-09-05T20:31:40Z INF Cannot determine default configuration path. No file [config.yml config.yaml] in [~/.cloudflared ~/.cloudflare-warp ~/cloudflare-warp /etc/cloudflared /usr/local/etc/cloudflared]
+2025-09-05T20:31:40Z INF Version 2025.8.1 (Checksum a66353004197ee4c1fcb68549203824882bba62378ad4d00d234bdb8251f1114)
+2025-09-05T20:31:40Z INF GOOS: linux, GOVersion: go1.24.4, GoArch: amd64
+2025-09-05T20:31:40Z INF Settings: map[ha-connections:1 protocol:quic url:http://localhost:9001]
+2025-09-05T20:31:40Z INF cloudflared will not automatically update if installed by a package manager.
+2025-09-05T20:31:40Z INF Generated Connector ID: ab017a7a-4a51-4c1e-b65c-7de0db6f3437
+2025-09-05T20:31:40Z INF Initial protocol quic
+2025-09-05T20:31:40Z INF ICMP proxy will use 192.168.0.114 as source for IPv4
+2025-09-05T20:31:40Z INF ICMP proxy will use fe80::f145:60e0:d0dd:c9ed in zone wlan0 as source for IPv6
+2025-09-05T20:31:41Z ERR Cannot determine default origin certificate path. No file cert.pem in [~/.cloudflared ~/.cloudflare-warp ~/cloudflare-warp /etc/cloudflared /usr/local/etc/cloudflared]. You need to specify the origin certificate path by specifying the origincert option in the configuration file, or set TUNNEL_ORIGIN_CERT environment variable originCertPath=
+2025-09-05T20:31:41Z INF ICMP proxy will use 192.168.0.114 as source for IPv4
+2025-09-05T20:31:41Z INF ICMP proxy will use fe80::f145:60e0:d0dd:c9ed in zone wlan0 as source for IPv6
+2025-09-05T20:31:41Z INF Starting metrics server on 127.0.0.1:20241/metrics
+2025-09-05T20:31:41Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveP256] connIndex=0 event=0 ip=198.41.192.7
+2025/09/05 15:31:41 failed to sufficiently increase receive buffer size (was: 208 kiB, wanted: 7168 kiB, got: 416 kiB). See https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes for details.
+2025-09-05T20:31:41Z INF Registered tunnel connection connIndex=0 connection=90513250-34b9-4175-844b-93a6d5083725 event=0 ip=198.41.192.7 location=tun02 protocol=quic
+2025-09-05T20:59:56Z ERR failed to run the datagram handler error="context canceled" connIndex=0 event=0 ip=198.41.192.7
+2025-09-05T20:59:56Z ERR failed to accept incoming stream requests error="failed to accept QUIC stream: timeout: no recent network activity" connIndex=0 event=0 ip=198.41.192.7
+2025-09-05T20:59:56Z WRN failed to serve tunnel connection error="datagram manager encountered a failure while serving" connIndex=0 event=0 ip=198.41.192.7
+2025-09-05T20:59:56Z ERR Serve tunnel error error="datagram manager encountered a failure while serving" connIndex=0 event=0 ip=198.41.192.7
+2025-09-05T20:59:56Z INF Retrying connection in up to 1s connIndex=0 event=0 ip=198.41.192.7
+2025-09-05T20:59:57Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveP256] connIndex=0 event=0 ip=198.41.192.7
+2025-09-05T21:00:02Z ERR Failed to dial a quic connection error="failed to dial to edge with quic: timeout: no recent network activity" connIndex=0 event=0 ip=198.41.192.7
+2025-09-05T21:00:02Z INF Retrying connection in up to 4s connIndex=0 event=0 ip=198.41.192.7
+2025-09-05T21:00:04Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveP256] connIndex=0 event=0 ip=198.41.192.67
+2025-09-05T21:00:09Z ERR Failed to dial a quic connection error="failed to dial to edge with quic: timeout: no recent network activity" connIndex=0 event=0 ip=198.41.192.67
+2025-09-05T21:00:09Z INF Retrying connection in up to 8s connIndex=0 event=0 ip=198.41.192.67
+2025-09-05T21:00:10Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveP256] connIndex=0 event=0 ip=198.41.200.13
+2025-09-05T21:00:15Z ERR Failed to dial a quic connection error="failed to dial to edge with quic: timeout: no recent network activity" connIndex=0 event=0 ip=198.41.200.13
+2025-09-05T21:00:15Z INF Retrying connection in up to 16s connIndex=0 event=0 ip=198.41.200.13
+2025-09-05T21:00:29Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveP256] connIndex=0 event=0 ip=198.41.200.193
+2025-09-05T21:00:34Z ERR Failed to dial a quic connection error="failed to dial to edge with quic: timeout: no recent network activity" connIndex=0 event=0 ip=198.41.200.193
+2025-09-05T21:00:34Z INF Retrying connection in up to 32s connIndex=0 event=0 ip=198.41.200.193
+2025-09-05T21:01:03Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveP256] connIndex=0 event=0 ip=198.41.192.27
+2025-09-05T21:01:08Z ERR Failed to dial a quic connection error="failed to dial to edge with quic: timeout: no recent network activity" connIndex=0 event=0 ip=198.41.192.27
+2025-09-05T21:01:08Z INF Retrying connection in up to 1m4s connIndex=0 event=0 ip=198.41.192.27
+2025-09-05T21:01:28Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveP256] connIndex=0 event=0 ip=198.41.192.167
+2025-09-05T21:01:33Z ERR Failed to dial a quic connection error="failed to dial to edge with quic: timeout: no recent network activity" connIndex=0 event=0 ip=198.41.192.167
+2025-09-05T21:01:33Z INF Retrying connection in up to 1m4s connIndex=0 event=0 ip=198.41.192.167
+2025-09-05T21:02:01Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveP256] connIndex=0 event=0 ip=198.41.192.37
+2025-09-05T21:02:02Z INF Registered tunnel connection connIndex=0 connection=3bf6ab75-3188-4e22-ac67-02f3ed88992b event=0 ip=198.41.192.37 location=tun02 protocol=quic

